@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JawiQuest: Ekspedisi Tangga Jawi</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#6d28d9;--pl:#ede9fe;--b:#2563eb;--g:#16a34a;--y:#facc15;--ink:#1e1b4b;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:"Trebuchet MS",Verdana,sans-serif;color:var(--ink);background:linear-gradient(180deg,#a5d8f3,#d9f0fb 60%,#86d17a);min-height:100%;padding:env(safe-area-inset-top,0px) 10px env(safe-area-inset-bottom,0px)}
+.jw{font-family:"Noto Naskh Arabic","Amiri","Traditional Arabic","Arial",serif;font-weight:700;direction:rtl;unicode-bidi:isolate;font-size:1.25em}
+.wrap{max-width:840px;margin:0 auto;padding:12px 0 24px}
+.hide{display:none!important}
+.card{background:#fff;border:4px solid var(--p);border-radius:22px;padding:18px;box-shadow:0 6px 0 #c4b5fd}
+h1{margin:0;color:var(--p);font-size:clamp(24px,6vw,40px);text-align:center;line-height:1.15}
+.sub{text-align:center;color:var(--b);font-weight:700;margin:4px 0 12px}
+button{font:inherit;font-weight:800;border:0;border-radius:16px;padding:12px 20px;cursor:pointer;color:#fff;background:var(--p);box-shadow:0 4px 0 #4c1d95;touch-action:manipulation}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #4c1d95}
+button:disabled{opacity:.5;cursor:not-allowed}
+.big{font-size:clamp(18px,4.5vw,24px);padding:14px 26px}
+.g{background:var(--g);box-shadow:0 4px 0 #166534}.bl{background:var(--b);box-shadow:0 4px 0 #1e3a8a}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.seg button{background:var(--pl);color:var(--p);box-shadow:0 3px 0 #c4b5fd}.seg button.on{background:var(--p);color:#fff}
+input[type=text]{font:inherit;font-size:18px;padding:10px 12px;border:3px solid #c4b5fd;border-radius:12px;width:100%;max-width:240px}
+ol.how{margin:8px 0;padding-left:22px;line-height:1.5;font-size:clamp(15px,3.8vw,18px)}
+.hud{display:grid;gap:8px;margin-bottom:8px}
+.pp{background:#fff;border:4px solid #ddd;border-radius:16px;padding:6px 10px;text-align:center;font-weight:800;font-size:clamp(14px,3.6vw,18px)}
+.pp.act{background:#fffbe6;box-shadow:0 0 0 3px var(--p)}
+.pp small{display:block;font-weight:700;color:#475569}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.top b{color:var(--p);font-size:clamp(16px,4vw,22px)}
+.top button{padding:8px 14px;font-size:14px}
+#board{position:relative;isolation:isolate;display:grid;width:100%;container-type:inline-size;border:6px solid #fff;border-radius:34px;overflow:hidden;background:#8fd0ee}
+.cell{position:relative;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.cell span{position:relative;z-index:3;color:#1e5fb4;font-weight:800;font-size:calc(100cqw/var(--cols)*.38);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
+.cell.ch{box-shadow:inset 0 0 0 3px #7c3aed}
+.cell i{position:absolute;z-index:3;top:1%;right:6%;font-style:normal;font-size:calc(100cqw/var(--cols)*.24)}
+svg.ov{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
+.tok{position:absolute;z-index:6;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%);transition:left .26s ease,top .26s ease;box-shadow:0 3px 6px #0006;width:calc(100cqw/var(--cols)*.42);height:calc(100cqw/var(--cols)*.42);font-size:calc(100cqw/var(--cols)*.25)}
+.ctl{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 6px;flex-wrap:wrap}
+.die{width:74px;height:74px;background:#fff;border:4px solid var(--p);border-radius:16px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:8px;gap:2px}
+.die b{border-radius:50%}.die b.on{background:var(--ink)}
+.die.roll{animation:sh .25s infinite}
+@keyframes sh{0%{transform:rotate(-12deg)}50%{transform:rotate(12deg) scale(1.08)}100%{transform:rotate(-12deg)}}
+#msg{text-align:center;font-weight:800;font-size:clamp(16px,4vw,20px);min-height:28px;color:var(--p)}
+.ov2{position:fixed;inset:0;background:#1e1b4bcc;display:flex;align-items:center;justify-content:center;z-index:50;padding:14px;overflow:auto}
+.modal{background:#fff;border:5px solid var(--y);border-radius:24px;padding:18px;max-width:520px;width:100%;text-align:center;margin:auto}
+.modal h2{margin:0;color:var(--p);font-size:clamp(20px,5vw,28px)}
+.mq{font-size:clamp(18px,4.6vw,24px);font-weight:700;margin:12px 0;line-height:1.4}
+.pic{font-size:clamp(46px,14vw,76px);line-height:1.1;margin:4px 0}
+.opt{display:block;width:100%;margin:8px 0;font-size:clamp(20px,5vw,26px);background:var(--pl);color:var(--ink);box-shadow:0 4px 0 #c4b5fd;border:3px solid #c4b5fd}
+.opt.bad{background:#fee2e2;border-color:#f87171;opacity:.7}
+.opt.ok{background:#bbf7d0;border-color:var(--g)}
+.hint{background:#fef9c3;border-radius:12px;padding:8px;margin:8px 0;font-weight:700}
+.fb{font-size:clamp(20px,5vw,28px);font-weight:800;color:var(--g);margin:8px 0}
+.stars{font-size:30px;margin-bottom:8px}
+.jungle{background:linear-gradient(#2f855a,#48bb78);border-radius:26px;padding:clamp(8px,2vw,16px);margin-bottom:8px}
+.sign{margin:0 auto 10px;max-width:92%;text-align:center;background:linear-gradient(#ecbb68,#c98d3f);border:4px solid #8a5a22;border-radius:20px;color:#fff;font-weight:800;padding:4px 10px;font-size:clamp(14px,3.8vw,26px);text-shadow:0 2px 0 #8a5a22}
+.zoo{text-align:center;font-size:clamp(28px,8vw,52px);margin-top:6px;letter-spacing:6px}
+.ctl{background:#ffffffb0;border-radius:22px;padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<section id="start" class="card">
+  <div style="text-align:center;font-size:44px">🗺️🐱⭐</div>
+  <h1>JAWIQUEST: EKSPEDISI TANGGA JAWI</h1>
+  <div class="sub">JawiQuest: Misi Dunia Jawi · Tahun 2</div>
+  <div class="row seg" id="modeSeg"><button class="on" data-m="2">2 PEMAIN</button><button data-m="3">3 PEMAIN</button></div>
+  <div class="row"><input type="text" id="n1" maxlength="12" placeholder="Nama Pemain 1"><input type="text" id="n2" maxlength="12" placeholder="Nama Pemain 2"><input type="text" id="n3" maxlength="12" placeholder="Nama Pemain 3" class="hide"></div>
+  <h3 style="margin:8px 0 0;color:var(--b)">📜 Arahan Permainan</h3>
+  <ol class="how">
+    <li>Tekan <b>ROLL DICE</b> dan gerakkan token anda.</li>
+    <li>Tangga 🪜 membawa anda naik. Ular 🐍 membawa anda turun.</li>
+    <li>Berhenti di petak ⭐ (5, 10, 15 … 50)? Jawab cabaran Jawi!</li>
+    <li>Jawapan betul dapat <b>10 mata</b> dan bintang. Jawapan salah? Cuba lagi.</li>
+    <li>Sampai petak <b>50</b> dan jawab cabaran terakhir untuk menang! 🏆</li>
+  </ol>
+  <div class="row"><button class="bl" id="snd">🔊 BUNYI: HIDUP</button></div>
+  <div class="row"><button class="big g" id="go">▶ MULA PERMAINAN</button></div>
+</section>
+
+<section id="game" class="hide">
+  <div class="top"><b>🗺️ JawiQuest</b><span><button class="bl" id="snd2">🔊 BUNYI: HIDUP</button> <button class="bl" id="restart">MAIN SEMULA</button></span></div>
+  <div class="hud" id="hud"></div>
+  <div class="jungle"><div class="sign">🐍 JAWIQUEST: EKSPEDISI TANGGA JAWI</div><div id="board"></div><div class="zoo">🦓🌿🐒🌴🦒🌿🦌</div></div>
+  <div class="ctl"><div class="die" id="die"></div><button class="big" id="rollBtn">🎲 ROLL DICE</button></div>
+  <div id="msg"></div>
+</section>
+</div>
+
+<div id="modal" class="ov2 hide"></div>
+
+<script>
+/* ============================================================
+   GURU: UBAH SUAI SOALAN DI SINI
+   M(soalan, [jawapanBetul, salah1, salah2...], petunjuk, gambar)
+      -> jawapan betul SENTIASA yang pertama dalam senarai; sistem
+         mengacak susunan sendiri (jawapan betul tidak akan berubah).
+   T(soalan, jawapanRumi, petunjuk, gambar/ejaanJawi)
+      -> murid menaip jawapan Rumi.
+   Teks Jawi boleh ditulis terus dalam soalan atau pilihan.
+   ============================================================ */
+const M=(q,o,h,p)=>({t:'m',q,o,h:h||'Cuba lagi, kamu boleh!',p}),
+      T=(q,a,h,p)=>({t:'t',q,a,h:h||'Cuba lagi, kamu boleh!',p});
+const PEPET='E-pepet tidak ditulis dengan huruf Ya.', TALING='E-taling ditulis dengan huruf Ya.', ALIF='Suku kata tertutup KVK: huruf Alif digugurkan.';
+const CHALLENGES={
+ 5:{n:'Misi E-Pepet',i:'Pilih ejaan Jawi yang betul bagi perkataan e-pepet.',qs:[
+  M('Pilih perkataan Jawi yang berbunyi e-pepet.',['تلور','ميجا','كيرا'],PEPET),
+  M('Pilih perkataan Jawi yang berbunyi e-pepet.',['ڤنسل','بيچا','تيكو'],PEPET),
+  M('Pilih perkataan Jawi yang berbunyi e-pepet.',['سكوله','ڤيتا','كيك'],PEPET),
+  M('Baca perkataan Jawi ini. Apakah bunyi “e” dalam perkataan ini?',['e-pepet','e-taling'],PEPET,'ڤنسل')]},
+ 10:{n:'Misi E-Taling',i:'Pilih atau taip jawapan bagi perkataan e-taling.',qs:[
+  M('Pilih perkataan Jawi yang berbunyi e-taling.',['كيرا','تلور','لمبو'],TALING),
+  M('Pilih perkataan Jawi yang berbunyi e-taling.',['تيكو','ڤنسل','سكوله'],TALING),
+  M('Baca perkataan Jawi ini. Apakah bunyi “e” dalam perkataan ini?',['e-taling','e-pepet'],TALING,'ميجا'),
+  T('Taip perkataan Rumi bagi ejaan Jawi ini.','beca',TALING+' Bunyinya be-ca.','بيچا')]},
+ 15:{n:'Pemburu Alif',i:'Adakah Alif digugurkan dalam suku kata KVK?',qs:[
+  M('Ejaan Jawi “تاندا” (tanda). Perlukah Alif digugurkan dalam suku kata KVK “tan”?',['Ya, Alif perlu digugurkan','Tidak perlu digugurkan'],ALIF),
+  M('Ejaan Jawi “هانتر” (hantar). Perlukah Alif digugurkan dalam suku kata KVK?',['Ya, Alif perlu digugurkan','Tidak perlu digugurkan'],ALIF),
+  M('Ejaan Jawi “سامبل” (sambal). Perlukah Alif digugurkan dalam suku kata KVK “sam”?',['Ya, Alif perlu digugurkan','Tidak perlu digugurkan'],ALIF)]},
+ 20:{n:'Detektif Ejaan',i:'Siasat dan pilih ejaan Jawi yang betul.',qs:[
+  M('Antara ejaan ini, yang mana betul bagi “meja”?',['ميجا','مجا','ماجا'],TALING),
+  M('Antara ejaan ini, yang mana betul bagi “malam”?',['مالم','مالام','ملم'],'Suku kata “ma” ada Alif. Suku kata “lam” (KVK) tiada Alif.'),
+  M('Antara ejaan ini, yang mana betul bagi “bantal”?',['بنتل','بانتل','بنتال'],ALIF)]},
+ 25:{n:'Cabaran Campuran 1',i:'E-pepet atau e-taling? Gunakan huruf Ya dengan betul.',qs:[
+  M('Perkataan manakah bunyi e-taling?',['peta','telur','lembu'],'E-taling: bunyi “e” seperti dalam “beca”.'),
+  M('Perkataan manakah bunyi e-pepet?',['lembu','teko','kek'],'E-pepet: bunyi “e” seperti dalam “telur”.'),
+  M('Pilih ejaan Jawi bagi “peta” (e-taling).',['ڤيتا','ڤتا'],TALING)]},
+ 30:{n:'Pemburu Alif 2',i:'Pilih ejaan yang mengikut hukum gugur Alif KVK.',qs:[
+  M('Pilih ejaan Jawi yang betul.',['تندا','هانتر','سامبل'],ALIF),
+  M('Pilih ejaan Jawi yang betul.',['بنتل','لامڤو','ڤانتاي'],ALIF),
+  M('Pilih ejaan Jawi yang betul.',['همبا','هامبا','سامبل'],ALIF)]},
+ 35:{n:'Misi Pakar E-Pepet',i:'Lihat gambar dan pilih ejaan Jawi e-pepet.',qs:[
+  M('Gambar ini ialah “lembu”. Pilih ejaan Jawi.',['لمبو','ليمبو'],PEPET,'🐄'),
+  M('Gambar ini ialah “pena”. Pilih ejaan Jawi.',['ڤنا','ڤينا'],PEPET,'🖊️'),
+  M('Gambar ini ialah “sekolah”. Pilih ejaan Jawi.',['سكوله','سيكوله'],PEPET,'🏫')]},
+ 40:{n:'Misi Pakar E-Taling',i:'Lihat gambar dan pilih ejaan Jawi e-taling.',qs:[
+  M('Gambar ini ialah “kek”. Pilih ejaan Jawi.',['كيك','كك'],TALING,'🍰'),
+  M('Gambar ini ialah “beg”. Pilih ejaan Jawi.',['بيڬ','بڬ'],TALING,'🎒'),
+  M('Gambar ini ialah “peta”. Pilih ejaan Jawi.',['ڤيتا','ڤتا'],TALING,'🗺️')]},
+ 45:{n:'Cabaran Betulkan Ejaan',i:'Cari kesalahan dan pilih pembetulan yang tepat.',qs:[
+  M('Ejaan “تكو” (teko) salah. Pilih ejaan yang betul.',['تيكو','تيكوا','تاكو'],TALING),
+  M('Ejaan “هانتر” (hantar) salah. Pilih ejaan yang betul.',['هنتر','هنتار','هانتار'],ALIF),
+  M('Ejaan “ليمبو” (lembu) salah. Pilih ejaan yang betul.',['لمبو','لامبو','لمبوا'],PEPET)]},
+ 50:{n:'Cabaran Juara Jawi',i:'Cabaran gabungan! Anda hampir menjadi juara.',qs:[
+  M('Pilih ejaan Jawi bagi “beg” (e-taling).',['بيڬ','بڬ'],TALING),
+  M('Pilih ejaan Jawi bagi “lampu”.',['لمڤو','لامڤو'],ALIF),
+  T('Taip perkataan Rumi bagi ejaan Jawi ini.','kera',TALING+' Bunyinya ke-ra.','كيرا')]}
+};
+/* Tangga (bawah -> atas) dan ular (kepala -> ekor). Elakkan gandaan 5. */
+const LADDERS={2:13,7:18,16:27,21:33,36:47};
+const SNAKES={17:4,29:14,34:22,44:31,49:38};
+const PRAISE=['Hebat!','Syabas!','Anda Memang Bijak!','Teruskan Misi!'];
+/* ============================================================ */
+
+const $=s=>document.querySelector(s), sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const fmt=s=>String(s).replace(/[\u0600-\u06FF]+/g,m=>`<bdi class="jw">${m}</bdi>`);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const COLORS=['#dc2626','#2563eb','#16a34a'], FACES=['🐱','🦊','🐼'], PIPS=[[],[4],[0,8],[0,4,8],[0,2,6,8],[0,2,4,6,8],[0,2,3,5,6,8]];
+const BG=['#a9d8ea','#f7d154'];
+let mode=2,S=null,cols=0;
+
+/* ---------- Kesan bunyi (Web Audio, tiada fail luaran). Tukar SND=false untuk mematikan secara lalai ---------- */
+let SND=true,AC=null;
+function tone(f,t,d,type,v){const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+t;o.type=type||'sine';o.frequency.setValueAtTime(f,s);g.gain.setValueAtTime(v||.06,s);g.gain.exponentialRampToValueAtTime(.0001,s+d);o.connect(g);g.connect(AC.destination);o.start(s);o.stop(s+d+.02)}
+const SFX={start:[[523,0,.15],[659,.15,.15],[784,.3,.25]],roll:[[200,0,.06,'square'],[260,.1,.06,'square'],[220,.2,.06,'square'],[300,.3,.06,'square'],[240,.4,.06,'square']],result:[[880,0,.12]],step:[[440,0,.07,'triangle']],bell:[[988,0,.3],[1319,.12,.4]],right:[[784,0,.12],[1047,.12,.3]],wrong:[[330,0,.2,'triangle'],[262,.18,.3,'triangle']],ladder:[[392,0,.1],[494,.1,.1],[587,.2,.1],[784,.3,.25]],snake:[[500,0,.12,'sawtooth',.03],[400,.12,.12,'sawtooth',.03],[300,.24,.12,'sawtooth',.03],[200,.36,.2,'sawtooth',.03]],turn:[[660,0,.1],[550,.1,.15]],star:[[1319,0,.1],[1568,.1,.25]],win:[[523,0,.15],[659,.15,.15],[784,.3,.15],[1047,.45,.4],[784,.85,.15],[1047,1,.5]]};
+function sfx(n){if(!SND)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();SFX[n].forEach(a=>tone(a[0],a[1],a[2],a[3],a[4]))}catch(e){}}
+const togg=()=>{SND=!SND;['#snd','#snd2'].forEach(s=>$(s).textContent=SND?'🔊 BUNYI: HIDUP':'🔇 BUNYI: MATI')};
+$('#snd').onclick=togg;$('#snd2').onclick=togg;
+
+$('#modeSeg').onclick=e=>{const b=e.target.closest('button');if(!b)return;mode=+b.dataset.m;
+  [...$('#modeSeg').children].forEach(x=>x.classList.toggle('on',x===b));$('#n3').classList.toggle('hide',mode!==3)};
+$('#go').onclick=()=>{
+  const names=['#n1','#n2','#n3'].map((s,i)=>$(s).value.trim()||'Pemain '+(i+1)).slice(0,mode);
+  S={cur:0,busy:false,over:false,ps:names.map(n=>({n,pos:1,score:0,stars:0,done:{},last:{}}))};
+  $('#start').classList.add('hide');$('#game').classList.remove('hide');
+  sfx('start');buildBoard();hud();setDie(1);turnMsg();$('#rollBtn').disabled=false};
+$('#restart').onclick=()=>{S=null;closeModal();$('#game').classList.add('hide');$('#start').classList.remove('hide')};
+
+const cellXY=n=>{const r=Math.floor((n-1)/cols);let c=(n-1)%cols;if(r%2)c=cols-1-c;const rows=50/cols;
+  return{x:(c+.5)/cols*100,y:(rows-1-r+.5)/rows*100,cx:(c+.5)*100,cy:(rows-1-r+.5)*100}};
+function buildBoard(){
+  cols=innerWidth<600?5:10;const rows=50/cols,B=$('#board');
+  B.style.cssText=`--cols:${cols};grid-template-columns:repeat(${cols},1fr);aspect-ratio:${cols}/${rows}`;
+  let h='';
+  for(let vr=0;vr<rows;vr++)for(let vc=0;vc<cols;vc++){
+    const r=rows-1-vr,n=r*cols+(r%2?cols-1-vc:vc)+1,ch=n%5===0;
+    h+=`<div class="cell${ch?' ch':''}" style="background:${BG[n%2]}"><span>${n===50?'🏆':n===1?'🚩':''}${n}</span>${ch?'<i>⭐</i>':''}</div>`}
+  h+=`<svg class="ov" viewBox="0 0 ${cols*100} ${rows*100}">${drawLines()}</svg>`;
+  B.innerHTML=h+S.ps.map((p,i)=>`<div class="tok" id="tk${i}" style="background:${COLORS[i]}">${FACES[i]}</div>`).join('');
+  S.ps.forEach((p,i)=>place(i,p.pos));
+}
+function drawLines(){
+  let s='';
+  for(const a in LADDERS){const A=cellXY(+a),B=cellXY(LADDERS[a]);
+    const dx=B.cx-A.cx,dy=B.cy-A.cy,L=Math.hypot(dx,dy),nx=-dy/L*12,ny=dx/L*12;
+    s+=`<g opacity=".9" stroke-linecap="round"><line x1="${A.cx+nx}" y1="${A.cy+ny}" x2="${B.cx+nx}" y2="${B.cy+ny}" stroke="#2563eb" stroke-width="7"/><line x1="${A.cx-nx}" y1="${A.cy-ny}" x2="${B.cx-nx}" y2="${B.cy-ny}" stroke="#2563eb" stroke-width="7"/>`;
+    for(let k=1;k<L/26;k++){const t=k*26/L;s+=`<line x1="${A.cx+nx+dx*t}" y1="${A.cy+ny+dy*t}" x2="${A.cx-nx+dx*t}" y2="${A.cy-ny+dy*t}" stroke="#ef4444" stroke-width="5"/>`}
+    s+='</g>'}
+  let k=0;
+  for(const a in SNAKES){const H=cellXY(+a),T=cellXY(SNAKES[a]);
+    const dx=T.cx-H.cx,dy=T.cy-H.cy,L=Math.hypot(dx,dy),nx=-dy/L*38,ny=dx/L*38,col=k++%2?'#16a34a':'#7c3aed';
+    s+=`<g opacity=".88" stroke-linecap="round"><path d="M${H.cx} ${H.cy} C${H.cx+dx/3+nx} ${H.cy+dy/3+ny} ${H.cx+dx*2/3-nx} ${H.cy+dy*2/3-ny} ${T.cx} ${T.cy}" fill="none" stroke="${col}" stroke-width="13"/><circle cx="${H.cx}" cy="${H.cy}" r="16" fill="${col}"/><circle cx="${H.cx-6}" cy="${H.cy-4}" r="4.5" fill="#fff"/><circle cx="${H.cx+6}" cy="${H.cy-4}" r="4.5" fill="#fff"/><circle cx="${H.cx-6}" cy="${H.cy-4}" r="2"/><circle cx="${H.cx+6}" cy="${H.cy-4}" r="2"/></g>`}
+  return s;
+}
+function place(i,n){const p=cellXY(n),t=$('#tk'+i);if(!t)return;t.style.left=(p.x+(i-(S.ps.length-1)/2)*(22/cols))+'%';t.style.top=p.y+'%'}
+addEventListener('resize',()=>{const c=innerWidth<600?5:10;if(S&&c!==cols&&!$('#game').classList.contains('hide'))buildBoard()});
+
+const badge=s=>s>=9?'🥇':s>=6?'🥈':s>=3?'🥉':'';
+function hud(){$('#hud').style.gridTemplateColumns='repeat('+S.ps.length+',1fr)';
+  $('#hud').innerHTML=S.ps.map((p,i)=>`<div class="pp${i===S.cur?' act':''}" style="border-color:${i===S.cur?'#facc15':COLORS[i]}">${FACES[i]} ${esc(p.n)} ${badge(p.stars)}<small>⭐ ${p.stars} · ${p.score} mata · petak ${p.pos}</small></div>`).join('')}
+const msg=t=>$('#msg').textContent=t;
+const turnMsg=()=>msg(`Giliran: ${S.ps[S.cur].n} ${FACES[S.cur]} – tekan ROLL DICE`);
+function setDie(v){$('#die').innerHTML=Array.from({length:9},(_,i)=>`<b class="${PIPS[v].includes(i)?'on':''}"></b>`).join('')}
+
+$('#rollBtn').onclick=async()=>{
+  if(S.busy||S.over)return;S.busy=true;$('#rollBtn').disabled=true;
+  const d=$('#die');d.classList.add('roll');sfx('roll');msg('Dadu sedang bergolek…');
+  for(let i=0;i<8;i++){setDie(1+Math.floor(Math.random()*6));await sleep(90)}
+  d.classList.remove('roll');
+  const v=1+Math.floor(Math.random()*6);setDie(v);sfx('result');const p=S.ps[S.cur];msg(`${p.n} mendapat ${v}!`);await sleep(600);
+  if(p.pos+v>50){msg('Melebihi petak 50! Tunggu giliran seterusnya.');await sleep(1200);return endTurn()}
+  for(let k=0;k<v;k++){p.pos++;place(S.cur,p.pos);sfx('step');await sleep(300)}
+  hud();
+  if(LADDERS[p.pos]){msg('🪜 Tangga! Naik ke atas!');sfx('ladder');await sleep(500);p.pos=LADDERS[p.pos];place(S.cur,p.pos);await sleep(900)}
+  else if(SNAKES[p.pos]){msg('🐍 Ular! Gelongsor ke bawah!');sfx('snake');await sleep(500);p.pos=SNAKES[p.pos];place(S.cur,p.pos);await sleep(900)}
+  hud();
+  if(CHALLENGES[p.pos])await challenge(p);
+  if(p.pos===50)return win();
+  endTurn();
+};
+function endTurn(){if(S.ps.length>1){S.cur=(S.cur+1)%S.ps.length;sfx('turn')}S.busy=false;hud();turnMsg();$('#rollBtn').disabled=false}
+
+function challenge(p){return new Promise(res=>{
+  const C=CHALLENGES[p.pos],pool=C.qs;let qi;
+  do{qi=Math.floor(Math.random()*pool.length)}while(pool.length>1&&qi===p.last[p.pos]);p.last[p.pos]=qi;
+  const q=pool[qi],first=!p.done[p.pos];
+  const Mo=$('#modal');Mo.classList.remove('hide');sfx('bell');
+  const ans=q.t==='m'?shuffle(q.o.map((x,i)=>({x,ok:i===0}))):null;
+  Mo.innerHTML=`<div class="modal"><div class="stars">⭐🔔⭐</div><h2>Petak ${p.pos}: ${C.n}</h2><div style="color:var(--b);font-weight:700">${C.i}</div>
+  ${q.p?`<div class="pic">${fmt(q.p)}</div>`:''}<div class="mq">${fmt(q.q)}</div><div id="ans"></div><div id="hint"></div><div id="fb"></div></div>`;
+  const A=$('#ans');
+  const good=()=>{
+    if(first){p.done[p.pos]=1;p.score+=10;p.stars++}
+    sfx('right');if(first)setTimeout(()=>sfx('star'),450);hud();$('#hint').innerHTML='';
+    $('#fb').innerHTML=`<div class="fb">✅ ${PRAISE[Math.floor(Math.random()*4)]}</div><div class="stars">${first?'⭐ +10 mata':'(Mata sudah diterima)'}</div><button class="big g" id="next">TERUSKAN MISI ▶</button>`;
+    $('#next').onclick=()=>{closeModal();res()};
+  };
+  const bad=()=>{sfx('wrong');$('#hint').innerHTML=`<div class="hint">💡 Hampir! ${q.h}<br>Cuba lagi.</div>`};
+  if(q.t==='m'){
+    A.innerHTML=ans.map((a,i)=>`<button class="opt" data-i="${i}">${fmt(a.x)}</button>`).join('');
+    A.onclick=e=>{const b=e.target.closest('.opt');if(!b||b.disabled||$('#next'))return;
+      if(ans[+b.dataset.i].ok){b.classList.add('ok');[...A.children].forEach(x=>x.disabled=true);good()}
+      else{b.classList.add('bad');b.disabled=true;bad()}}
+  }else{
+    A.innerHTML=`<input type="text" id="ti" autocomplete="off" autocapitalize="off" placeholder="Taip di sini"><div><button class="big bl" id="chk" style="margin-top:8px">SEMAK</button></div>`;
+    const chk=()=>{if($('#next'))return;const v=$('#ti').value.trim().toLowerCase();
+      if(v===q.a){$('#ti').disabled=true;$('#chk').disabled=true;good()}else bad()};
+    $('#chk').onclick=chk;$('#ti').onkeydown=e=>{if(e.key==='Enter')chk()};setTimeout(()=>$('#ti').focus(),50);
+  }
+})}
+const closeModal=()=>{$('#modal').classList.add('hide');$('#modal').innerHTML=''};
+
+function win(){
+  S.over=true;sfx('win');const w=S.ps[S.cur];
+  $('#modal').classList.remove('hide');
+  $('#modal').innerHTML=`<div class="modal"><div style="font-size:70px">🏆</div><div class="stars">⭐⭐⭐</div><h2>TAHNIAH, ${esc(w.n)}!</h2>
+  <div class="mq">Anda ialah Juara Jawi! 🎉</div>
+  ${S.ps.map((p,i)=>`<div class="pp" style="margin:6px 0;border-color:${COLORS[i]}">${FACES[i]} ${esc(p.n)} ${badge(p.stars)}<small>⭐ ${p.stars} bintang · ${p.score} mata</small></div>`).join('')}
+  <button class="big g" id="again" style="margin-top:8px">MAIN SEMULA</button></div>`;
+  $('#again').onclick=()=>{closeModal();const n=S.ps.map(p=>p.n);S=null;$('#game').classList.add('hide');$('#start').classList.remove('hide');
+    $('#n1').value=n[0];if(n[1])$('#n2').value=n[1];if(n[2])$('#n3').value=n[2]};
+}
+</script>
+</body>
+</html>
